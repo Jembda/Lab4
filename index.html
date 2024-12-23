@@ -1,0 +1,269 @@
+<!-- <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html> -->
+
+
+
+<!doctype html>
+<html lang="en">
+  <!-- <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anagram Game</title>
+
+    <style>
+
+      
+      #myButton {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 10px;
+        
+      }
+
+      #startButton:hover {
+        background-color: #45a049;
+      }
+
+      title {
+        text-align: center;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        
+      }      
+
+    </style>
+
+  </head>
+  <body>
+    <div class="container">
+     <h1>Anagram Game</h1>
+    <div id="anagramDisplay"></div>
+    <button id="myButton" class="button">Start Game</button>
+    <div id="timer"> Time left: <span id="countdown">30</span> seconds</div>
+    </div>  -->
+    
+    
+
+
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Anagram Game</title>
+      <style>
+        .rotate-text-container {
+          text-align: center;
+          padding: 100px;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+        }
+        .rotate-text {
+          font-size: 24px;
+          animation: rotateText 5s linear infinite;
+        }
+        @keyframes rotate-text {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+          
+        }
+          body {
+              font-family: Arial, sans-serif;
+              text-align: center;
+          }
+          #myButton {
+              display: flex;
+              justify-content: space-between;
+              margin: 0 auto;
+              max-width: 800px;
+              align-items: center;
+              text-align: center;
+              padding: 100px;                    
+              
+              
+          }
+          #start-container {
+              flex: 1;
+              text-align: center;
+              background-color: #4CAF50;
+              border: none;
+              color: white;
+              padding: 15px 32px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              font-size: 16px;
+              margin: 4px 2px;
+              cursor: pointer;
+              border-radius: 10px;
+              width: 50%;
+              
+          }
+          #game-container {
+              flex: 1;
+              text-align: center;
+              width: 50%;
+          }
+          .button-container {
+              margin-bottom: 20px;
+              
+          }
+          #timer-container {
+              font-size: 18px;
+              margin-bottom: 20px;
+          }
+          #level-container {
+              margin-bottom: 20px;
+          } 
+
+
+
+      </style>
+      </head>
+      <body>
+        <div class="rotate-text-container">
+          <h1 class="rotate-text">Welcome to the Anagram Game!</h1>
+          <h1 class="rotate-text"> To play the Game select level and press the start button.</h1>
+        </div>
+      <div id="myButton">
+          <div id="start-container">
+              <div class="button-container">
+                  <button onclick="startGame()">Start Game</button>                  
+              </div>
+              <div id="timer-container">
+                  Time left: <span id="countdown">20</span> seconds
+              </div>
+          </div>
+          <div id="game-container" >
+              <div id="level-container">
+                           Game Level:
+                  <select id="game-level">
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate">Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                  </select>
+              </div>
+              <div id="challenges">Challenges played: <span id="challengeCount">0</span></div>
+              <div id="word-display"></div>
+              <input type="text" id="input-field" placeholder="Type your guess here">
+              <button onclick="checkAnswer">Check</button>
+              
+              <div id="result"></div>
+          </div>
+
+          <div class="cont">
+            <div class="spinner"></div>
+            <span class="number"></span>
+          </div>
+
+
+
+
+      </div>
+
+
+    <script type="module" src="/main.js">
+      const startButton = document.getElementById('myButton');
+      const countdownDisplay = document.getElementById('timer-container');
+
+
+      
+
+      // // // let countdown;
+
+      // // // function startGame() {
+      // // //   startButton.style.display = 'none';
+      // // //   let secondsLeft = 30;
+      // // //   countdownDisplay.textContent = secondsLeft;
+
+      // // //   countdown = setInterval(() => {
+      // // //     secondsLeft--;
+      // // //     countdownDisplay.textContent = secondsLeft;
+
+      // // //     is (secondsLeft === 0) {
+
+            
+      // //     }
+          
+      //   }, 1000)
+      // }
+
+
+
+      function startGame() {
+  const selectedLevel = document.getElementById('game-level').value;
+  const countdownDisplay = document.getElementById('timer-container');
+  const challengeCountDisplay = document.getElementById('challengeCount');
+  
+  let challengeCount = 0;
+
+  // Display the selected game level
+  console.log("Selected Game Level:", selectedLevel);
+  
+  // Initialize the game state
+  challengeCountDisplay.textContent = challengeCount;
+  
+  // Display the first anagram challenge to the user
+  displayNextChallenge();
+  
+  // Start a timer for the first challenge
+  startTimer();
+
+  function displayNextChallenge() {
+    // Logic to display the next anagram challenge
+  }
+
+  function startTimer() {
+    // Logic to start the timer for the current challenge
+  }
+
+  // Add event listener for the "Check" button
+  const myButton = document.getElementById('check-button');
+  myButton.addEventListener('click', checkAnswer);
+  
+  function checkAnswer() {
+    // Logic to validate the user's answer
+  }
+}
+
+
+
+
+
+
+
+
+
+
+      
+    </script>
+  </body>
+</html>
