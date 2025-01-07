@@ -122,11 +122,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                guard: ({ event }) => normalizeUtterance(event.value?.[0]?.utterance) === "create a meeting",
+                guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "create a meeting",
                 target: "#DM.CreateAppointment.AskName",
               },
               {
-                guard: ({ event }) => normalizeUtterance(event.value?.[0]?.utterance) === "know who",
+                guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "know who",
                 target: "#DM.KnowWho.AskWho",
               },
             ],
@@ -163,7 +163,7 @@ const dmMachine = setup({
             RECOGNISED: [
               {
                 guard: ({ event }) => {
-                  const utterance = event.value[0]?.utterance.trim().toLowerCase();
+                  const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
                   const confidence = event.value[0]?.confidence || 0;
                   const isValidName = isInGrammar(utterance);
                   const isAboveThreshold = confidence >= 0.7;
@@ -206,7 +206,7 @@ const dmMachine = setup({
             RECOGNISED: {
               target: "IsWholeDay",
               actions: assign({
-                meetingDate: ({ event }) => event.value[0]?.utterance.toLowerCase(),
+                meetingDate: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase(),
               }),
             },
           },
@@ -228,12 +228,12 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "yes",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
                 target: "ConfirmWholeDayAppointment",
                 actions: assign({ isWholeDay: true }),
               },
               {
-                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "no",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
                 target: "GetMeetingTime",
                 actions: assign({ isWholeDay: false }),
               },
@@ -258,7 +258,7 @@ const dmMachine = setup({
             RECOGNISED: {
               target: "ConfirmAppointment",
               actions: assign({
-                meetingTime: ({ event }) => event.value[0]?.utterance.toLowerCase(),
+                meetingTime: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase(),
               }),
             },
           },
@@ -292,11 +292,11 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "yes",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
                 target: "AppointmentCreated",
               },
               {
-                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "no",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
                 target: "AppointmentNotCreated",
               },
             ],
@@ -341,7 +341,7 @@ const dmMachine = setup({
           RECOGNISED: [
             {
               guard: ({ event }) => {
-                const utterance = event.value[0]?.utterance.trim().toLowerCase();
+                const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
                 const confidence = event.value[0]?.confidence || 0;
                 const isValidName = isInGrammar(utterance);
                 const isAboveThreshold = confidence >= 0.7;
@@ -364,7 +364,7 @@ const dmMachine = setup({
         GivePersonalInfo: {
           entry: [
             ({ context, event }) => {
-              const utterance = event.value[0]?.utterance.trim().toLowerCase();
+              const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
               const confidence = event.value[0]?.confidence || 0;
               const isValidName = isInGrammar(utterance);
               const isAboveThreshold = confidence >= 0.7;
