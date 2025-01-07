@@ -156,35 +156,58 @@ const dmMachine = setup({
           on: { SPEAK_COMPLETE: "MeetingWithName" },
         },
         MeetingWithName: {
-          entry: ({ context }) =>
-            context.ssRef.send({
-              type: "LISTEN",
-              value: { nlu: true },
-            }),
-          on: {            
-            RECOGNISED: [
-              {
-                guard: ({ event }) => {
-                  const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
-                  const confidence = event.value[0]?.confidence || 0;
-                  const isValidName = isInGrammar(utterance);
-                  const isAboveThreshold = confidence >= 0.7;
-            
-                  console.log(
-                    `Recognized utterance: '${utterance}', Confidence: ${confidence}, In Grammar: ${isValidName}, Above Threshold: ${isAboveThreshold}, Valid: ${isValidName && isAboveThreshold}`
-                  );
-            
-                  return isValidName && isAboveThreshold;
-                },
-                actions: assign({
-                  meetingWithName: ({ event }) =>
-                    getPerson(event.value[0]?.utterance.trim().toLowerCase()),
-                }),
-                target: "GetMeetingDay",
-              },
-            ],           
+          entry: {
+            type: "listen"
           },
-        },        
+          on: {
+              RECOGNISED: [
+                {
+                  guard: ({ event }) => event.nluValue.entities.length === 0,
+                  target: "NoInput", 
+                },
+                {
+                  guard: ({ event }) => event.nluValue.entities[0].category === "personName",
+                  target: "GetMeetingDay", 
+                  actions: assign({
+                    name: ({event}) => event.nluValue.entities[0].text,
+                  })
+                },
+                
+            ],
+            // ASR_NOINPUT : "NoInput",
+            target: "GetMeetingDay",
+          },
+      },
+      //  MeetingWithName: {
+      //     entry: ({ context }) =>
+      //       context.ssRef.send({
+      //         type: "LISTEN",
+      //         value: { nlu: true },
+      //       }),
+      //     on: {            
+      //       RECOGNISED: [
+      //         {
+      //           guard: ({ event }) => {
+      //             const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
+      //             const confidence = event.value[0]?.confidence || 0;
+      //             const isValidName = isInGrammar(utterance);
+      //             const isAboveThreshold = confidence >= 0.7;
+            
+      //             console.log(
+      //               `Recognized utterance: '${utterance}', Confidence: ${confidence}, In Grammar: ${isValidName}, Above Threshold: ${isAboveThreshold}, Valid: ${isValidName && isAboveThreshold}`
+      //             );
+            
+      //             return isValidName && isAboveThreshold;
+      //           },
+      //           actions: assign({
+      //             meetingWithName: ({ event }) =>
+      //               getPerson(event.value[0]?.utterance.trim().toLowerCase()),
+      //           }),
+      //           target: "GetMeetingDay",
+      //         },
+      //       ],           
+      //     },
+      //   },        
         GetMeetingDay: {
           entry: ({ context }) => {
             const prompt = "Which day would you like to schedule the meeting?";
