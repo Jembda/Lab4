@@ -123,19 +123,25 @@ const dmMachine = setup({
             RECOGNISED: [
               {
                 //guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "create a meeting",
-                guard: ({ event }) => event.nluvalue.intents[0] === "create a meeting",
+                guard: ({ event }) => event.nluvalue.intents[0].category === "create a meeting",
                 target: "#DM.CreateAppointment.AskName",
               },
               {
                 //guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "know who",
-                guard: ({ event }) => event.nluvalue.intents[0] === "know who",
+                guard: ({ event }) => event.nluvalue.intents[0].category === "who",
                 target: "#DM.KnowWho.AskWho",
               },
+              {
+                guard: ({ event }) => normalizeUtterance(event.value?.[0]?.utterance) === 0,
+                //guard: ({ event }) => event.value.intents[0] === 0,
+                target: "#DM.CreateAppointment.NOINPUT",
+              },
             ],
-            after: { 10000: "PromptRetry" },
+            ASR_NOINPUT: "NOINPUT",
+            //after: { 10000: "NOINPUT" },
           },
         },
-        PromptRetry: {
+        NOINPUT: {
           entry: ({ context }) =>
             context.ssRef.send({
               type: "SPEAK",
@@ -154,60 +160,65 @@ const dmMachine = setup({
               },
             }),
           on: { SPEAK_COMPLETE: "MeetingWithName" },
-        },
-        MeetingWithName: {
-          entry: {
-            type: "listen"
-          },
+        },        
+       MeetingWithName: {
+          entry: ({ context }) =>
+            context.ssRef.send({
+              type: "LISTEN",
+              value: { nlu: true },
+            }),
           on: {
-              RECOGNISED: [
-                {
-                  guard: ({ event }) => event.nluValue.entities.length === 0,
-                  target: "NoInput", 
-                },
-                {
-                  guard: ({ event }) => event.nluValue.entities[0].category === "personName",
-                  target: "GetMeetingDay", 
-                  actions: assign({
-                    name: ({event}) => event.nluValue.entities[0].text,
-                  })
-                },
-                
-            ],
-            // ASR_NOINPUT : "NoInput",
+        RECOGNISED: [
+          {
+            guard: ({ event }) => event.value.entities.length === 0,
+            target: "NOINPUT", 
+          },
+          {
+            guard: ({ event }) => event.nluvalue.entities[0].category === "personName",
+            target: "GetMeetingDay", 
+            actions: assign({
+              name: ({event}) => event.nluvalue.entities[0].text,
+            }),
             target: "GetMeetingDay",
           },
-      },
-      //  MeetingWithName: {
-      //     entry: ({ context }) =>
-      //       context.ssRef.send({
-      //         type: "LISTEN",
-      //         value: { nlu: true },
-      //       }),
-      //     on: {            
-      //       RECOGNISED: [
-      //         {
-      //           guard: ({ event }) => {
-      //             const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
-      //             const confidence = event.value[0]?.confidence || 0;
-      //             const isValidName = isInGrammar(utterance);
-      //             const isAboveThreshold = confidence >= 0.7;
+          
+      ],            
+            // RECOGNISED: [
+            //   {
+            //     guard: ({ event }) => {
+            //       const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
+            //       const confidence = event.value[0]?.confidence || 0;
+            //       const isValidName = isInGrammar(utterance);
+            //       const isAboveThreshold = confidence >= 0.7;
             
-      //             console.log(
-      //               `Recognized utterance: '${utterance}', Confidence: ${confidence}, In Grammar: ${isValidName}, Above Threshold: ${isAboveThreshold}, Valid: ${isValidName && isAboveThreshold}`
-      //             );
+            //       console.log(
+            //         `Recognized utterance: '${utterance}', Confidence: ${confidence}, In Grammar: ${isValidName}, Above Threshold: ${isAboveThreshold}, Valid: ${isValidName && isAboveThreshold}`
+            //       );
             
-      //             return isValidName && isAboveThreshold;
-      //           },
-      //           actions: assign({
-      //             meetingWithName: ({ event }) =>
-      //               getPerson(event.value[0]?.utterance.trim().toLowerCase()),
-      //           }),
-      //           target: "GetMeetingDay",
-      //         },
-      //       ],           
-      //     },
-      //   },        
+            //       return isValidName && isAboveThreshold;
+            //     },
+            //     actions: assign({
+            //       meetingWithName: ({ event }) =>
+            //         getPerson(event.value[0]?.utterance.trim().toLowerCase()),
+            //     }),
+            //     target: "GetMeetingDay",
+            //   },
+            // ],           
+          },
+        },
+        NOINPUT: {
+          entry: ({ context }) => {context.ssRef.send({
+            type: "SPEAK",
+            value: {
+              utterance: "I don't get it! Please say a name.",
+            },
+          });
+        },
+        on: { SPEAK_COMPLETE: "MeetingWithName" },
+        after: {
+          10000: "#DM.CreateAppointment.ListenToStart",
+        },
+      },        
         GetMeetingDay: {
           entry: ({ context }) => {
             const prompt = "Which day would you like to schedule the meeting?";
@@ -231,7 +242,7 @@ const dmMachine = setup({
             RECOGNISED: {
               target: "IsWholeDay",
               actions: assign({
-                meetingDate: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase(),
+                meetingDate: ({ event }) => event.value[0]?.utterance.toLowerCase(),
               }),
             },
           },
@@ -253,14 +264,14 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                //guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
-                guard: ({ event }) => event.nluvalue.intents[0] === "yes",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
+                //guard: ({ event }) => event.nluvalue.intents[0] === "yes",
                 target: "ConfirmWholeDayAppointment",
                 actions: assign({ isWholeDay: true }),
               },
               {
-                //guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
-                guard: ({ event }) => event.nluvalue.intents[0] === "no",
+                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
+                //guard: ({ event }) => event.nluvalue.intents[0] === "no",
                 target: "GetMeetingTime",
                 actions: assign({ isWholeDay: false }),
               },
@@ -285,7 +296,7 @@ const dmMachine = setup({
             RECOGNISED: {
               target: "ConfirmAppointment",
               actions: assign({
-                meetingTime: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase(),
+                meetingTime: ({ event }) => event.value[0]?.utterance.toLowerCase(),
               }),
             },
           },
@@ -295,7 +306,7 @@ const dmMachine = setup({
             context.ssRef.send({
               type: "SPEAK",
               value: {
-                utterance: `Do you want to create an appointment with ${context.meetingWithName} on ${context.meetingDate} for the whole day?`,
+                utterance: `Do you want to create an appointment with ${context.name} on ${context.meetingDate} for the whole day?`,
               },
             }),
           on: { SPEAK_COMPLETE: "ListenConfirmation" },
@@ -305,7 +316,7 @@ const dmMachine = setup({
             context.ssRef.send({
               type: "SPEAK",
               value: {
-                utterance: `Do you want to create an appointment with ${context.meetingWithName} on ${context.meetingDate} at ${context.meetingTime}?`,
+                utterance: `Do you want to create an appointment with ${context.name} on ${context.meetingDate} at ${context.meetingTime}?`,
               },
             }),
           on: { SPEAK_COMPLETE: "ListenConfirmation" },
@@ -370,7 +381,7 @@ const dmMachine = setup({
           RECOGNISED: [
             {
               guard: ({ event }) => {
-                const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
+                const utterance = event.value[0]?.utterance.trim().toLowerCase();
                 const confidence = event.value[0]?.confidence || 0;
                 const isValidName = isInGrammar(utterance);
                 const isAboveThreshold = confidence >= 0.7;
@@ -393,7 +404,7 @@ const dmMachine = setup({
         GivePersonalInfo: {
           entry: [
             ({ context, event }) => {
-              const utterance = event.nluvalue[0]?.utterance.trim().toLowerCase();
+              const utterance = event.value[0]?.utterance.trim().toLowerCase();
               const confidence = event.value[0]?.confidence || 0;
               const isValidName = isInGrammar(utterance);
               const isAboveThreshold = confidence >= 0.7;
