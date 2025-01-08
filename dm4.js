@@ -123,12 +123,12 @@ const dmMachine = setup({
             RECOGNISED: [
               {
                 //guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "create a meeting",
-                guard: ({ event }) => event.nluvalue.intents[0].category === "create a meeting",
+                guard: ({ event }) => event.nluValue.intents[0].category === "create a meeting",
                 target: "#DM.CreateAppointment.AskName",
               },
               {
                 //guard: ({ event }) => normalizeUtterance(event.nluvalue?.[0]?.utterance) === "know who",
-                guard: ({ event }) => event.nluvalue.intents[0].category === "who",
+                guard: ({ event }) => event.nluValue.intents[0].category === "who",
                 target: "#DM.KnowWho.AskWho",
               },
               {
@@ -170,14 +170,14 @@ const dmMachine = setup({
           on: {
         RECOGNISED: [
           {
-            guard: ({ event }) => event.value.entities.length === 0,
+            guard: ({ event }) => event.nluValue.entities.length === 0,
             target: "NOINPUT", 
           },
           {
-            guard: ({ event }) => event.nluvalue.entities[0].category === "personName",
+            guard: ({ event }) => event.nluValue.entities[0].category === "personName",
             target: "GetMeetingDay", 
             actions: assign({
-              name: ({event}) => event.nluvalue.entities[0].text,
+              name: ({event}) => event.nluValue.entities[0].text,
             }),
             target: "GetMeetingDay",
           },
@@ -264,13 +264,13 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
+                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "yes",
                 //guard: ({ event }) => event.nluvalue.intents[0] === "yes",
                 target: "ConfirmWholeDayAppointment",
                 actions: assign({ isWholeDay: true }),
               },
               {
-                guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
+                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "no",
                 //guard: ({ event }) => event.nluvalue.intents[0] === "no",
                 target: "GetMeetingTime",
                 actions: assign({ isWholeDay: false }),
@@ -330,18 +330,18 @@ const dmMachine = setup({
           on: {
             RECOGNISED: [
               {
-                //guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "yes",
-                guard: ({ event }) => event.nluvalue.intents[0] === "yes",
+                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "yes",
+                //guard: ({ event }) => event.nluValue.intents[0] === "yes",
                 target: "AppointmentCreated",
               },
               {
-                //guard: ({ event }) => event.nluvalue[0]?.utterance.toLowerCase() === "no",
-                guard: ({ event }) => event.nluvalue.intents[0] === "no",
+                guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "no",
+                //guard: ({ event }) => event.nluValue.intents[0] === "no",
                 target: "AppointmentNotCreated",
               },
             ],
           },
-        },
+        },  
         AppointmentCreated: {
           entry: ({ context }) =>
             context.ssRef.send({
@@ -448,13 +448,13 @@ const dmMachine = setup({
             RECOGNISED: [
               {
                 //guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "yes",
-                guard: ({ event }) => event.nluvalue.intents[0] === "yes",
+                guard: ({ event }) => event.value.intents[0] === "yes",
                 //target: "#DM.CreateAppointment.AskName",
                 target: "#DM.Prepare",
               },
               {
                 //guard: ({ event }) => event.value[0]?.utterance.toLowerCase() === "no",
-                guard: ({ event }) => event.nluvalue.intents[0] === "no",
+                guard: ({ event }) => event.value.intents[0] === "no",
                 // target: "#DM.Prepare",
                 target: "#DM.Complete", 
               },
